@@ -13,6 +13,11 @@ Then, run the build commend:
 npm run build
 ```
 
+For unit and integration tests  with (which this tests all the children components as well as fetch function)
+```
+npm test
+```
+
 To run the the development server:
 
 ```bash
