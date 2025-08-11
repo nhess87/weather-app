@@ -1,0 +1,29 @@
+name: Deploy Project
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: node:20
+
+    steps:
+      -uses: actions/checkout@v3
+      with:
+        node-version: '20'
+      -run: npm install
+      -run: npm run build
+
+      -name: Get SSH KEYS AND PERMISSIONS
+      -run: |
+        mkdir -p ~/.SSH
+        echo "${{secrets.MY_SSH_PRIVATE_KEY_FOR_VM}}" > ~/.SSH/id_rsa && chmod 600 ~/.SSH/id_rsa
+      -name: DEPLOY TO VM USING SCP
+      -run: scp -o StrictHostKeyChecking=no -i ~/.SSH/id_rsa -r ./dist/* ${{secrets.MY_SSH_USERNAME_FOR_VM}}@${{secrets.MY_SSH_KEY_FOR_VM}}:~/node-app
+      -name: RESTART THE SERVER
+      -run: SSH -o StrictHostKeyChecking=no -i ~/.SSH/id_rsa ${{secrets.MY_SSH_USERNAME_FOR_VM}}@${{secrets.MY_SSH_KEY_FOR_VM}} "cd ~/node-app && npm install && pm2 restart 0"
+
