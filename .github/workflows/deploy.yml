@@ -29,7 +29,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
 
       - name: DEPLOY TO VM USING SCP
-        run: scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./dist/* ${{ secrets.MY_SSH_USERNAME_FOR_VM }}@${{ secrets.MY_VM_IP }}:/home/${{ secrets.MY_SSH_USERNAME_FOR_VM }}/node-app
+        run: ssh -i StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./dist/* ${{ secrets.MY_SSH_USERNAME_FOR_VM }}@${{ secrets.MY_VM_IP }}:/home/${{ secrets.MY_SSH_USERNAME_FOR_VM }}/node-app
 
       - name: RESTART THE SERVER
         run: ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.MY_SSH_USERNAME_FOR_VM }}@${{ secrets.MY_VM_IP }} "cd /home/${{ secrets.MY_SSH_USERNAME_FOR_VM }}/node-app && npm install && pm2 restart 0"
