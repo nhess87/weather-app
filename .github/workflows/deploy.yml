@@ -1,4 +1,4 @@
-name: Deploy Project to Azure VM
+name: Deploy Project
 
 on:
   push:
@@ -8,33 +8,28 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    container:
+      image: node:20
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
         with:
           node-version: '20'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build project
+      - name: Run build
         run: npm run build
 
-      - name: Configure SSH
+      - name: Get SSH KEYS AND PERMISSIONS
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.MY_SSH_PRIVATE_KEY_FOR_VM }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 20.92.55.101 >> ~/.ssh/known_hosts
 
-      - name: Deploy to Azure VM
-        run: |
-          scp -i ~/.ssh/id_rsa -r ./dist/* azureuser@20.92.55.101:/home/azureuser/node-app
+      - name: DEPLOY TO VM USING SCP
+        run: scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./dist/* ${{ secrets.MY_SSH_USERNAME_FOR_VM }}@${{ secrets.MY_VM_IP }}:/home/azureuser/node-app
 
-      - name: Restart app on VM
-        run: |
-          ssh -i ~/.ssh/id_rsa azureuser@20.92.55.101 "cd /home/azureuser/node-app && npm install && pm2 restart app"
+      - name: RESTART THE SERVER
+        run: ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.MY_SSH_USERNAME_FOR_VM }}@${{ secrets.MY_VM_IP }} "cd ~/node-app && npm install && pm2 restart 0"
