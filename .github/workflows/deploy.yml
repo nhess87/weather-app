@@ -28,8 +28,11 @@ jobs:
           echo "${{ secrets.MY_SSH_PRIVATE_KEY_FOR_VM }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: DEPLOY TO VM USING SCP
-        run: scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./dist/* azureuser@20.121.68.255:/home/azureuser/node-app
 
-      - name: RESTART THE SERVER
-        run: ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa azureuser@20.121.68.255 "cd /home/azureuser/node-app && npm install && pm2 restart 0"
+      - name: Deploy Next.js app to Azure VM
+        run: |
+          rsync -avz --exclude node_modules --exclude .git -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./ azureuser@20.121.68.255:/home/azureuser/node-app
+
+      - name: Restart app on VM
+        run: |
+          ssh -i ~/.ssh/id_rsa azureuser@20.121.68.255 "cd /home/azureuser/node-app && npm install --production && pm2 restart app"
