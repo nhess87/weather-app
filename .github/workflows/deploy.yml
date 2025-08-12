@@ -25,17 +25,19 @@ jobs:
       - name: Install rsync
         run: apt-get update && apt-get install -y rsync
 
-      - name: Get SSH KEYS AND PERMISSIONS
+      - name: Create SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.MY_SSH_PRIVATE_KEY_FOR_VM }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan 20.121.68.255 >> ~/.ssh/known_hosts
 
-
-      - name: Deploy Next.js app to Azure VM
+      - name: Deploy files to Azure VM
         run: |
-          rsync -avz --exclude node_modules --exclude .git -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./ azureuser@20.121.68.255:/home/azureuser/node-app
+          rsync -avz --exclude node_modules --exclude .git \
+          -e "ssh -i ~/.ssh/id_rsa" \
+          ./ azureuser@20.121.68.255:/home/azureuser/node-app
 
-      - name: Restart app on VM
+      - name: SSH into Azure VM and restart app
         run: |
-          ssh -i ~/.ssh/id_rsa azureuser@20.121.68.255 "cd /home/azureuser/node-app && npm install --production && pm2 restart app"
+          ssh -i ~/.ssh/id_rsa azureuser@20.121.68.255 "pm2 restart all || pm2 start app.js"
