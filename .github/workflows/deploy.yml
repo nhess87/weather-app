@@ -24,10 +24,10 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Configure SSH key
+      - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
-          echo ${{ secrets.MY_SSH_PRIVATE_KEY_FOR_VM }} > ~/.ssh/id_rsa
+          echo "${{ secrets.MY_SSH_PRIVATE_KEY_FOR_VM }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 20.92.55.101 >> ~/.ssh/known_hosts
 
