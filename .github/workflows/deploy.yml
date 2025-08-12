@@ -22,6 +22,9 @@ jobs:
       - name: Run build
         run: npm run build
 
+      - name: Install rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
       - name: Get SSH KEYS AND PERMISSIONS
         run: |
           mkdir -p ~/.ssh
